@@ -6,50 +6,55 @@ import subprocess
 
 class GrecordReader(object):
 
-  def __init__(self, fd, record_terminate_pattern):
+  def __init__(self, fd, record_term_pattern):
     if hasattr(fd, 'fileno'):
       fd = fd.fileno()
     self.fd = int(fd)
-    self._runt = None
     fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
+    self._buffer = None
     self._internal_iter = None
-    self.split_pattern = split_pattern
-    self.record_term_pattern = record_terminate_pattern
+    self.record_term_pattern = record_term_pattern
 
   def fileno(self):
     return self.fd
 
   def _get_chunk(self):
     data = os.read(self.fd, 4096)
-    if self._runt is not None:
-      data = ''.join((self._runt, data))
-      self._runt = None
+    if self._buffer is not None:
+      data = ''.join((self._buffer, data))
+      self._buffer = None
     if not data.endswith(self.record_term_pattern):
       s = data.rsplit('\n', 1)
       if len(s) == 2:
-        data, self._runt = s
+        data, self._buffer = s
       else:
-        data, self._runt = '', s
-       
+        data, self._buffer = '', s
     return data
       
   def _make_iter(self):
-    dry_pipe = False
+    dry_descriptor = False
     data = ''
-    while not dry_pipe:
+    split_on = self.record_term_pattern
+    while not dry_descriptor:
       try:
         data = self._get_chunk()
       except OSError, e:
         if e.errno != errno.EAGAIN: raise
-        dry_pipe = True
+        dry_descriptor = True
         continue
-      
       for line in data.split('\n'):
-        if line: yield line
-
+        # return only full strings
+        if line: 
+          yield line
     self._internal_iter = None
-      
+    # yield keyword should handle this, but explicit is better than implicit
+    raise StopIteration
+
   def readline(self):
+    """
+    initialize internal iterator if None
+    does not exhaust iterator, saves it
+    """
     i = self._internal_iter
     if i is None:
       i = self._make_iter()
@@ -64,6 +69,10 @@ class GrecordReader(object):
     return line
 
   def readlines(self):
+    """
+    initialize internal iterator if None
+    exhaust the iterator
+    """
     i = self._internal_iter
     if i is None:
       i = self._make_iter()
@@ -72,15 +81,15 @@ class GrecordReader(object):
       yield line 
 
 class GlineReader(GrecordReader):
+  def __init__(self, fd):
+    GrecordReader.__init__(self, fd, '\n')
 
-class GlogTailer(GlineReader):
+class GlogFileTailer(GlineReader):
   def __init__(self, logfile):
     cmd = 'tail -f %s' % logfile
     cmd = cmd.split()
     self.proc = proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    GlogReader.__init__(self, proc.stdout)
+    GlineReader.__init__(self, proc.stdout)
 
-      
   def __del__(self):
     os.kill(self.proc.pid, 15)
-

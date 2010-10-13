@@ -6,7 +6,7 @@ import tempfile
 import os
 import re 
 import sys
-import greadline
+import gmreader
 import time
 
 DEFAULT_TAIL_LINES = 10
@@ -35,7 +35,7 @@ class TestGLineReader(unittest.TestCase):
     cmd = CMD % self.out_file.name
     cmd = cmd.split()
     self.proc = proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    self.gread = greadline.GLineReader(proc.stdout)
+    self.gread = gmreader.GlineReader(proc.stdout)
 
   def tearDown(self):
     os.kill(self.proc.pid, 15)
