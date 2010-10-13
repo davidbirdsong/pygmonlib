@@ -3,7 +3,6 @@ import os
 import errno
 import subprocess
 
-class GlineReader(GrecordReader):
 
 class GrecordReader(object):
 
@@ -15,7 +14,7 @@ class GrecordReader(object):
     fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
     self._internal_iter = None
     self.split_pattern = split_pattern
-    self.record_terminate_pattern = record_terminate_pattern
+    self.record_term_pattern = record_terminate_pattern
 
   def fileno(self):
     return self.fd
@@ -25,7 +24,7 @@ class GrecordReader(object):
     if self._runt is not None:
       data = ''.join((self._runt, data))
       self._runt = None
-    if not data.endswith('\n'):
+    if not data.endswith(self.record_term_pattern):
       s = data.rsplit('\n', 1)
       if len(s) == 2:
         data, self._runt = s
@@ -71,6 +70,8 @@ class GrecordReader(object):
 
     for line in i:
       yield line 
+
+class GlineReader(GrecordReader):
 
 class GlogTailer(GlineReader):
   def __init__(self, logfile):
