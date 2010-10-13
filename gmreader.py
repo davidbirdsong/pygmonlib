@@ -50,7 +50,7 @@ class GrecordReader(object):
     # yield keyword should handle this, but explicit is better than implicit
     raise StopIteration
 
-  def readline(self):
+  def yieldrecord(self):
     """
     initialize internal iterator if None
     does not exhaust iterator, saves it
@@ -68,7 +68,7 @@ class GrecordReader(object):
     
     return line
 
-  def readlines(self):
+  def yieldrecords(self):
     """
     initialize internal iterator if None
     exhaust the iterator
@@ -83,6 +83,12 @@ class GrecordReader(object):
 class GlineReader(GrecordReader):
   def __init__(self, fd):
     GrecordReader.__init__(self, fd, '\n')
+
+  def readline(self):
+    return self.yieldrecord()
+
+  def readlines(self):
+    return self.yieldrecords()
 
 class GlogFileTailer(GlineReader):
   def __init__(self, logfile):
