@@ -42,10 +42,10 @@ class GrecordReader(object):
         if e.errno != errno.EAGAIN: raise
         dry_descriptor = True
         continue
-      for line in data.split('\n'):
+      for record in data.split(self.record_term_pattern):
         # return only full strings
-        if line: 
-          yield line
+        if record: 
+          yield record
     self._internal_iter = None
     # yield keyword should handle this, but explicit is better than implicit
     raise StopIteration
