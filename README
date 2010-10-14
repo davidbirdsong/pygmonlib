@@ -1,0 +1,37 @@
+This package attempts to abstract out reusable python gmond metric extension 
+functions and classes that I found myself rewriting again and again.
+
+INSTALL:
+I've never written a setup.py or learned disutils.  For now, just copy the file 
+into your existing PYTHONPATH or modify PYTHONPATH to include the location of
+
+FILES:
+  gmreader.py - a set of classes that provides iterator access to records 
+    from non-blocking IO resources.
+
+    unix's 'tail -f' is great for following files and keeping up with logs
+    rotating underneath, but reading from it will block your gmond process.
+    
+    this was implemented with threading at first, but IMHO single proc, 
+    single threaded is preferrable when possible.
+  
+    the intention is that this approach makes it easy to reuse code to pull 
+    metrics off of other file descriptor resources ..sockets etc...
+    
+NOTES:
+  - gmreader.GrecordReader - generic base class
+      pass a file descriptor or file-like object(implements a fileno() methood) 
+      and a record terminating pattern('\n')
+
+  - gmreader.GlineReader - extends GrecordReader, 
+      pass a file descriptor, it will iterate over '\n', 
+      implements readline() and readlines() methods
+  - gmreader.GlogReader - extends GlineReader, 
+      pass a filename, use readline() or readlines()
+
+EXAMPLES:
+  g = gmreader.GlineReader('/var/log/httpd/access.log')
+  for line in g.readlines():
+    print line
+
+  check out *_example.py to see more detailed example

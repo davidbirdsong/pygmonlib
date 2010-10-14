@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+#
+# Author: david birdsong 2010
+# Project URL: http://github.com/davidbirdsong/pygmonlib
+#
+# License: same as Ganglia
+# 
+
 import subprocess
 import unittest
 import tempfile

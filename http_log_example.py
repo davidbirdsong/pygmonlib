@@ -1,3 +1,10 @@
+#
+# Author: david birdsong 2010
+# Project URL: http://github.com/davidbirdsong/pygmonlib
+#
+# License: same as Ganglia
+# 
+
 import gmreader 
 import sys
 import time
@@ -28,7 +35,7 @@ class HttpCodes(object):
     parse out http code from this line 
     127.0.0.1 - - [24/Sep/2010:21:16:17 -0400] "GET /foo HTTP/1.1" 404 169 "-" "curl/7.20.0 (x86_64-redhat-linux-gnu) libcurl/7.20.0 NSS/3.12.6.2 zlib/1.2.3 c-ares/1.7.0 libidn/1.16 libssh2/1.2.4"
 
-    return http code and http code class 
+    return http code and http code class, ie. (502, 'http_500')
     """
     code = int(line.split('"')[2].split()[0])
     return (code, 'http_%i' % (code - code % 100))
@@ -37,8 +44,8 @@ class HttpCodes(object):
     return self.descriptors
 
   def get_metric(self, name):
-    # input object will return lines written to file since 
-    # last read
+    # input object will return lines written to fd since 
+    # last read and raise StopIteration once reading would block
     for line in self.input.readlines():
       for code in self._parse_http_code(line):
         self.http_codes.setdefault(code, 0)
