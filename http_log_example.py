@@ -31,11 +31,7 @@ class HttpCodes(object):
     return http code and http code class 
     """
     code = int(line.split('"')[2].split()[0])
-    try:
-      return (code, 'http_%i' % (code - code % 100))
-    except TypeError:
-      print line
-      raise
+    return (code, 'http_%i' % (code - code % 100))
 
   def return_descriptors(self):
     return self.descriptors
