@@ -35,6 +35,8 @@ class GrecordReader(object):
       if len(s) == 2:
         data, self._buffer = s
       else:
+        if type(s) == list:
+          s = ''.join(s)
         data, self._buffer = '', s
     return data
       
